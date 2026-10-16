@@ -41,7 +41,9 @@ Não há banco de dados, atualização incremental, backtest financeiro ou site.
 | `preparacao.py` | Acrescenta features e alvo a uma cópia da tabela |
 | `treinamento.py` | Prepara X/y, avalia o modelo e a referência e salva os resultados |
 | `main.py` | Coleta, valida, salva candles e executa o treinamento do par escolhido |
-| `tests/test_treinamento.py` | Testes offline de preparação e avaliação temporal |
+| `tests/test_treinamento.py` | Testes offline de preparação e avaliação temporal (`unittest`) |
+| `tests/test_qa_coleta.py` | Cenários de coleta com `pytest` e corretora simulada |
+| `docs/qa-bugs.md` | Registro de falha reproduzida e casos de teste |
 | `requirements.txt` | Dependências do ambiente |
 
 | Nome | Significado |
@@ -79,7 +81,15 @@ python -m venv venv
 
 # Para executar os testes offline:
 .\venv\Scripts\python.exe -m unittest discover -s tests -v
+
+# Para executar também os cenários de QA com pytest:
+.\venv\Scripts\python.exe -m pip install pytest
+.\venv\Scripts\python.exe -m pytest -q
 ```
+
+Os cenários de QA usam uma corretora simulada: não consultam a internet nem
+alteram CSVs reais. Um teste marcado `xfail` registra a falha aberta BUG-01;
+o motivo e os passos para reproduzi-la estão em `docs/qa-bugs.md`.
 
 As configurações ficam no início de `main.py`. A seleção atual é:
 
