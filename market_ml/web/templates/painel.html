@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GNOMON · Testes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='painel.css') }}">
+  <script defer src="{{ url_for('static', filename='painel.js') }}"></script>
+</head>
+<body>
+<main>
+  <header><h1>GNOMON</h1><span class="muted">Em desenvolvimento · painel de testes</span></header>
+  <section class="card" aria-label="Configuração do teste">
+    <div class="source-grid">
+      <div><label for="corretora">Corretora</label>
+        <select id="corretora">{% for id in corretoras %}
+          <option value="{{ id }}" {% if id == 'bybit' %}selected{% endif %}>{{ id }}</option>
+        {% endfor %}</select>
+      </div>
+      <button id="catalogo" type="button">Carregar catálogo</button>
+      <div><label for="par">Par</label>
+        <select id="par" disabled><option value="">Carregue o catálogo</option></select>
+      </div>
+    </div>
+    <p id="catalogo-nota" class="muted small">Cripto spot · candles de 1 hora</p>
+    <div class="date-grid">
+      <div><label for="inicio">Data inicial</label><input id="inicio" type="date" value="2026-08-01" required></div>
+      <div><label for="fim">Data final</label><input id="fim" type="date" value="2026-09-01" required></div>
+      <button id="carregar" class="primary" type="button" disabled>Carregar histórico</button>
+    </div>
+    <p class="muted small">UTC · início incluído às 00h; data final excluída às 00h.</p>
+  </section>
+  <p id="estado" role="status" aria-live="polite" class="status">Carregue o catálogo para escolher um par.</p>
+  <p id="vazio" class="muted">Nenhum histórico carregado.</p>
+  <section id="historico" hidden>
+    <section class="card">
+      <div class="summary">
+        <div><span class="muted small">Mercado</span><strong id="mercado"></strong><small id="fonte" class="muted"></small></div>
+        <div><span class="muted small">Candles</span><strong id="quantidade"></strong></div>
+        <div><span class="muted small">Cobertura dos dados</span><strong id="cobertura"></strong><small id="qualidade-resumo" class="muted"></small></div>
+      </div>
+      <p id="periodo" class="small muted"></p>
+      <details id="qualidade">
+        <summary>Verificação dos dados</summary>
+        <div id="validacao"></div><div id="lacunas"></div>
+      </details>
+    </section>
+    <section class="card">
+      <div class="training-header"><h2>Treinamento</h2><button id="treinar" class="primary" type="button" disabled>Treinar e avaliar</button></div>
+      <p id="treino-motivo" class="small muted"></p>
+      <div id="resultado" hidden>
+        <div id="metricas" class="table-wrap"></div>
+        <details>
+          <summary>Detalhes do experimento</summary>
+          <p id="experimento" class="small muted"></p>
+          <div id="etapas" class="table-wrap"></div>
+        </details>
+        <details>
+          <summary>Como ler as métricas</summary>
+          <p class="small muted">Acurácia: percentual de acertos. Balanceada: média do acerto em alta e em queda/empate.
+            Log loss: avalia as probabilidades; menor é melhor, e não é uma porcentagem.
+            A referência prevê a classe mais frequente no treino.</p>
+        </details>
+      </div>
+      <p class="small muted">Avaliação histórica experimental. Não representa lucro ou previsão ao vivo.</p>
+    </section>
+  </section>
+</main>
+</body>
+</html>

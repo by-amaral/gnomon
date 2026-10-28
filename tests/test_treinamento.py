@@ -12,8 +12,9 @@ import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
 
-from preparacao import adicionar_alvo, adicionar_features
-from treinamento import FEATURES, preparar_base, salvar_resultados, treinar_avaliar
+from market_ml.preparacao import adicionar_alvo, adicionar_features
+from market_ml.treinamento import FEATURES, preparar_base, salvar_resultados, treinar_avaliar
+from market_ml.banco import conectar, listar_experimentos, salvar_candles
 
 
 INICIO = "2026-08-01T00:00:00Z"
@@ -80,7 +81,7 @@ class TestWalkForward(unittest.TestCase):
             escaladores.append(escalador)
             return escalador
 
-        with patch("treinamento.StandardScaler", side_effect=criar_scaler):
+        with patch("market_ml.treinamento.StandardScaler", side_effect=criar_scaler):
             resultado = treinar_avaliar(criar_candles(), INICIO, FIM)
 
         base = resultado["base"]
@@ -129,22 +130,32 @@ class TestWalkForward(unittest.TestCase):
         tabela = criar_candles()
         resultado = treinar_avaliar(tabela, INICIO, FIM)
         with tempfile.TemporaryDirectory() as pasta:
-            destino = salvar_resultados(resultado, pasta)
-            self.assertEqual(
-                {arquivo.name for arquivo in destino.iterdir()},
-                {"base.csv", "etapas.csv", "previsoes.csv", "metricas.csv"},
-            )
-            self.assertEqual(len(pd.read_csv(destino / "previsoes.csv")), 543)
+            banco = Path(pasta) / "teste.db"
+            identificador = salvar_resultados(resultado, banco)
+            self.assertEqual(set(listar_experimentos(banco)["id"]), {identificador})
+            with conectar(banco) as conexao:
+                self.assertEqual(conexao.execute(
+                    "SELECT count(*) FROM artefatos_experimento"
+                ).fetchone()[0], 4)
             arquivo = Path(pasta) / "candles.csv"
             tabela.to_csv(arquivo, index=False)
-            # A CLI recebe uma pasta temporária de saída para não tocar resultados reais.
+            # Compatibilidade de entrada: CSV antigo, resultados no banco temporário.
             processo = subprocess.run(
                 [sys.executable, "-B", "treinamento.py", "--arquivo", str(arquivo),
-                 "--saida", str(Path(pasta) / "cli")],
+                 "--banco", str(banco)],
                 cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True,
             )
             self.assertEqual(processo.returncode, 0, processo.stdout + processo.stderr)
             self.assertIn("724", processo.stdout)
+            salvar_candles(tabela, banco)
+            processo = subprocess.run(
+                [sys.executable, "-B", "treinamento.py", "--corretora", "teste",
+                 "--banco", str(banco)],
+                cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True,
+            )
+            self.assertEqual(processo.returncode, 0, processo.stdout + processo.stderr)
+            self.assertEqual(listar_experimentos(banco)["id"].nunique(), 3)
+            self.assertEqual(list(Path(pasta).glob("*.csv")), [arquivo])
 
 
 if __name__ == "__main__":

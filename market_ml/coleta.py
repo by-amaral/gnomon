@@ -79,7 +79,10 @@ def buscar_candles(corretora, par, intervalo="1h", quantidade=5, inicio_ms=None)
     tabela.insert(0, "corretora", corretora.id)
     return tabela
 
-def buscar_historico(corretora, par, inicio_ms, fim_ms, intervalo="1h", quantidade=500):
+def buscar_historico(
+    corretora, par, inicio_ms, fim_ms, intervalo="1h", quantidade=500,
+    ao_receber_lote=None,
+):
     """Reúne lotes de candles fechados dentro do período escolhido.
 
     """
@@ -107,6 +110,8 @@ def buscar_historico(corretora, par, inicio_ms, fim_ms, intervalo="1h", quantida
         if lote.empty:
             break
 
+        if ao_receber_lote is not None:
+            ao_receber_lote(lote)
         lotes.append(lote)
         ultimo_horario = lote["timestamp"].max()
         proximo_inicio = int((ultimo_horario + duracao).timestamp() * 1000)

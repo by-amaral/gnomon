@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from coleta import buscar_candles, buscar_historico
+from market_ml.coleta import buscar_candles, buscar_historico
 
 
 HORA_MS = 60 * 60 * 1000

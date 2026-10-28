@@ -7,7 +7,7 @@ O teste `xfail` falha pelo comportamento descrito abaixo; ele não é uma corre�
 ## BUG-01 - Candle fechado de 5 minutos é descartado
 
 - **Estado:** aberto; reproduzido em `tests/test_qa_coleta.py`.
-- **Local:** `coleta.buscar_candles`.
+- **Local:** `market_ml.coleta.buscar_candles`.
 - **Pré-condição:** a corretora oferece o intervalo `5m`. Ela devolve um candle
   com timestamp de abertura `2026-08-01 00:00 UTC`. O relógio da coleta marca
   `2026-08-01 00:06 UTC`.
